@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { logActivity } from "../utils/logger.js";
+import { getIO } from "../utils/socket.js";
 
 const prisma = new PrismaClient();
 
@@ -157,6 +158,7 @@ export const createBooking = async (req, res) => {
       `Booked resource ${asset.name} on ${date} from ${startTime} to ${endTime}`,
       req,
     );
+    getIO().emit("booking:created", booking);
     return res.status(201).json(booking);
   } catch (error) {
     console.error("Create Booking Error:", error);
@@ -237,6 +239,7 @@ export const updateBooking = async (req, res) => {
       `Updated booking status/time for resource ${existing.asset.name}`,
       req,
     );
+    getIO().emit("booking:updated", updated);
     return res.status(200).json(updated);
   } catch (error) {
     console.error("Update Booking Error:", error);
@@ -273,6 +276,7 @@ export const deleteBooking = async (req, res) => {
       `Deleted booking ID ${bookingId}`,
       req,
     );
+    getIO().emit("booking:deleted", { id: bookingId });
     return res.status(200).json({ message: "Booking deleted successfully" });
   } catch (error) {
     console.error("Delete Booking Error:", error);

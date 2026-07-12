@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { sendEmailNotification } from "./email.js";
+import { getIO } from "./socket.js";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +11,7 @@ export const createNotification = async (
   type = "INFO",
 ) => {
   try {
-    await prisma.notification.create({
+    const notification = await prisma.notification.create({
       data: {
         userId,
         title,
@@ -19,6 +20,9 @@ export const createNotification = async (
         isRead: false,
       },
     });
+
+    // Emit live notification update via Socket
+    getIO().emit("notification:created", notification);
 
     // Fetch user's email to send email notification
     const user = await prisma.user.findUnique({

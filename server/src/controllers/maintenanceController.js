@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { logActivity } from "../utils/logger.js";
 import { createNotification } from "../utils/notifications.js";
+import { getIO } from "../utils/socket.js";
 
 const prisma = new PrismaClient();
 
@@ -98,6 +99,7 @@ export const createMaintenanceRequest = async (req, res) => {
       `Raised maintenance request for ${asset.name}`,
       req,
     );
+    getIO().emit("maintenance:created", request);
     return res.status(201).json(request);
   } catch (error) {
     console.error("Create Maintenance Request Error:", error);
@@ -203,6 +205,8 @@ export const updateMaintenanceRequest = async (req, res) => {
       `Updated maintenance ticket ID ${reqId} to ${nextStatus}`,
       req,
     );
+    getIO().emit("maintenance:updated", result);
+    getIO().emit("asset:updated", { id: existing.assetId });
     return res.status(200).json(result);
   } catch (error) {
     console.error("Update Maintenance Request Error:", error);

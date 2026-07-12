@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { useSocket } from "../../context/SocketContext";
 import { Plus, Spinner } from "phosphor-react";
 import type { Asset, AssetCategory, Department } from "../../types";
 
@@ -17,6 +18,7 @@ interface AssetWithRelations extends Omit<Asset, "images"> {
 
 export const Assets: React.FC = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [assets, setAssets] = useState<AssetWithRelations[]>([]);
   const [categories, setCategories] = useState<AssetCategory[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -53,7 +55,30 @@ export const Assets: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+
+    if (socket) {
+      const handleSync = () => {
+        console.log("[Socket] Assets/Allocations update detected, refetching...");
+        fetchData();
+      };
+
+      socket.on("asset:created", handleSync);
+      socket.on("asset:updated", handleSync);
+      socket.on("asset:deleted", handleSync);
+      socket.on("allocation:created", handleSync);
+      socket.on("allocation:returned", handleSync);
+      socket.on("transfer:updated", handleSync);
+
+      return () => {
+        socket.off("asset:created", handleSync);
+        socket.off("asset:updated", handleSync);
+        socket.off("asset:deleted", handleSync);
+        socket.off("allocation:created", handleSync);
+        socket.off("allocation:returned", handleSync);
+        socket.off("transfer:updated", handleSync);
+      };
+    }
+  }, [socket]);
 
   const fetchData = async () => {
     setLoading(true);

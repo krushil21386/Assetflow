@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { logActivity } from "../utils/logger.js";
 import { createNotification, notifyRoles } from "../utils/notifications.js";
+import { getIO } from "../utils/socket.js";
 
 const prisma = new PrismaClient();
 
@@ -106,6 +107,8 @@ export const allocateAsset = async (req, res) => {
       `Allocated asset ${asset.name} to ${employee.name}`,
       req,
     );
+    getIO().emit("allocation:created", allocation);
+    getIO().emit("asset:updated", { id: targetAssetId, status: "ALLOCATED" });
     return res.status(201).json(allocation);
   } catch (error) {
     console.error("Allocate Asset Error:", error);
@@ -187,6 +190,8 @@ export const returnAsset = async (req, res) => {
       `Returned asset ${allocation.asset.name} from ${allocation.employee.name}`,
       req,
     );
+    getIO().emit("allocation:returned", { id: allocId });
+    getIO().emit("asset:updated", { id: allocation.assetId, status: "AVAILABLE" });
     return res.status(200).json({ message: "Asset returned successfully" });
   } catch (error) {
     console.error("Return Asset Error:", error);
@@ -267,6 +272,7 @@ export const requestTransfer = async (req, res) => {
       `Requested transfer of ${asset.name} to department ID ${targetDeptId}`,
       req,
     );
+    getIO().emit("transfer:requested", transfer);
     return res.status(201).json(transfer);
   } catch (error) {
     console.error("Request Transfer Error:", error);
@@ -328,6 +334,7 @@ export const approveTransferHOD = async (req, res) => {
       `Approved HOD stage of transfer for asset ${transfer.asset.name}`,
       req,
     );
+    getIO().emit("transfer:updated", updated);
     return res.status(200).json(updated);
   } catch (error) {
     console.error("Approve Transfer HOD Error:", error);
@@ -393,6 +400,8 @@ export const approveTransferManager = async (req, res) => {
       `Completed transfer of asset ${transfer.asset.name} to department ID ${transfer.toDepartmentId}`,
       req,
     );
+    getIO().emit("transfer:updated", result);
+    getIO().emit("asset:updated", { id: transfer.assetId, departmentId: transfer.toDepartmentId });
     return res.status(200).json(result);
   } catch (error) {
     console.error("Approve Transfer Manager Error:", error);
@@ -443,6 +452,7 @@ export const rejectTransfer = async (req, res) => {
       `Rejected transfer of asset ${transfer.asset.name}`,
       req,
     );
+    getIO().emit("transfer:updated", updated);
     return res.status(200).json(updated);
   } catch (error) {
     console.error("Reject Transfer Error:", error);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { useSocket } from "../../context/SocketContext";
 import { Plus, Spinner, ArrowsLeftRight } from "phosphor-react";
 import type { Asset, Employee, Department } from "../../types";
 
@@ -69,9 +70,32 @@ export const Allocations: React.FC = () => {
 
   const isManagerOrAdmin = user?.role === "Admin" || user?.role === "Asset Manager";
 
+  const { socket } = useSocket();
+
   useEffect(() => {
     fetchData();
-  }, []);
+
+    if (socket) {
+      const handleSync = () => {
+        console.log("[Socket] Allocation/Transfer update detected, refetching...");
+        fetchData();
+      };
+      
+      socket.on("allocation:created", handleSync);
+      socket.on("allocation:returned", handleSync);
+      socket.on("transfer:requested", handleSync);
+      socket.on("transfer:updated", handleSync);
+      socket.on("asset:updated", handleSync);
+
+      return () => {
+        socket.off("allocation:created", handleSync);
+        socket.off("allocation:returned", handleSync);
+        socket.off("transfer:requested", handleSync);
+        socket.off("transfer:updated", handleSync);
+        socket.off("asset:updated", handleSync);
+      };
+    }
+  }, [socket]);
 
   const fetchData = async () => {
     setLoading(true);

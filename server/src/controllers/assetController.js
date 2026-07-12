@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { logActivity } from "../utils/logger.js";
+import { getIO } from "../utils/socket.js";
 
 const prisma = new PrismaClient();
 
@@ -201,6 +202,7 @@ export const createAsset = async (req, res) => {
       `Created asset ${name} [Tag: ${assetTag}]`,
       req,
     );
+    getIO().emit("asset:created", newAsset);
     return res.status(201).json(newAsset);
   } catch (error) {
     console.error("Create Asset Error:", error);
@@ -315,6 +317,7 @@ export const updateAsset = async (req, res) => {
       `Updated asset ${updated.name} [Tag: ${updated.assetTag}]`,
       req,
     );
+    getIO().emit("asset:updated", updated);
     return res.status(200).json(updated);
   } catch (error) {
     console.error("Update Asset Error:", error);
@@ -367,6 +370,7 @@ export const deleteAsset = async (req, res) => {
       `Deleted asset ${asset.name} [Tag: ${asset.assetTag}]`,
       req,
     );
+    getIO().emit("asset:deleted", { id: assetId });
     return res.status(200).json({ message: "Asset deleted successfully" });
   } catch (error) {
     console.error("Delete Asset Error:", error);

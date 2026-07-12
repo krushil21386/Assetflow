@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useSocket } from "../../context/SocketContext";
 import api from "../../services/api";
 import { Spinner, Warning } from "phosphor-react";
 import {
@@ -34,6 +35,7 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"
 
 export const Dashboard: React.FC = () => {
   const { user } = useAuth();
+  const { socket } = useSocket();
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -48,8 +50,42 @@ export const Dashboard: React.FC = () => {
         setLoading(false);
       }
     };
+
     fetchDashboardData();
-  }, []);
+
+    if (socket) {
+      const handleSync = () => {
+        console.log("[Socket] Dashboard sync event received, refetching telemetry...");
+        fetchDashboardData();
+      };
+
+      socket.on("asset:created", handleSync);
+      socket.on("asset:updated", handleSync);
+      socket.on("asset:deleted", handleSync);
+      socket.on("allocation:created", handleSync);
+      socket.on("allocation:returned", handleSync);
+      socket.on("maintenance:created", handleSync);
+      socket.on("maintenance:updated", handleSync);
+      socket.on("booking:created", handleSync);
+      socket.on("booking:updated", handleSync);
+      socket.on("transfer:requested", handleSync);
+      socket.on("transfer:updated", handleSync);
+
+      return () => {
+        socket.off("asset:created", handleSync);
+        socket.off("asset:updated", handleSync);
+        socket.off("asset:deleted", handleSync);
+        socket.off("allocation:created", handleSync);
+        socket.off("allocation:returned", handleSync);
+        socket.off("maintenance:created", handleSync);
+        socket.off("maintenance:updated", handleSync);
+        socket.off("booking:created", handleSync);
+        socket.off("booking:updated", handleSync);
+        socket.off("transfer:requested", handleSync);
+        socket.off("transfer:updated", handleSync);
+      };
+    }
+  }, [socket]);
 
   if (loading) {
     return (
