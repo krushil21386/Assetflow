@@ -38,6 +38,7 @@ export const Allocations: React.FC = () => {
   const [allocations, setAllocations] = useState<Allocation[]>([]);
   const [transfers, setTransfers] = useState<Transfer[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [allAssets, setAllAssets] = useState<Asset[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -83,6 +84,7 @@ export const Allocations: React.FC = () => {
       setAllocations(histRes.data.allocations || []);
       setTransfers(histRes.data.transfers || []);
       setAssets((assetsRes.data || []).filter((a: Asset) => a.status === "AVAILABLE"));
+      setAllAssets(assetsRes.data || []);
       setEmployees((empRes.data || []).filter((e: Employee) => e.status === "ACTIVE"));
       setDepartments((deptRes.data || []).filter((d: Department) => d.status === "ACTIVE"));
     } catch (e) {
@@ -682,7 +684,7 @@ export const Allocations: React.FC = () => {
                     required
                   >
                     <option value="">Choose Asset...</option>
-                    {assets.map((a) => (
+                    {allAssets.filter((a) => a.departmentId !== null).map((a) => (
                       <option key={a.id} value={a.id}>
                         {a.name} [{a.assetTag}]
                       </option>

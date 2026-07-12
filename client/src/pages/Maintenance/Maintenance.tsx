@@ -204,7 +204,7 @@ export const Maintenance: React.FC = () => {
                       </td>
                       <td className="py-3 px-md">{t.requestedBy.name}</td>
                       <td className="py-3 px-md">{t.assignedTo?.name || "Unassigned"}</td>
-                      <td className="py-3 px-md font-mono font-bold">${t.cost.toFixed(2)}</td>
+                      <td className="py-3 px-md font-mono font-bold">₹{t.cost.toFixed(2)}</td>
                       <td className="py-3 px-md">
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
@@ -392,7 +392,7 @@ export const Maintenance: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-md">
                 <div className="space-y-xs">
-                  <label className="font-label-md text-label-md text-primary">Maintenance Cost (USD)</label>
+                  <label className="font-label-md text-label-md text-primary">Maintenance Cost (INR)</label>
                   <div className="relative flex items-center border border-outline-variant rounded transition-all bg-surface-container-lowest h-10 px-sm">
                     <input
                       type="number"

@@ -172,7 +172,7 @@ export const Reports: React.FC = () => {
                       Original Purchase Cost
                     </p>
                     <p className="font-headline-sm text-headline-sm font-bold text-primary mt-xs">
-                      ${assetData.summary.totalCost.toLocaleString(undefined, {
+                      ₹{assetData.summary.totalCost.toLocaleString("en-IN", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}
@@ -188,8 +188,8 @@ export const Reports: React.FC = () => {
                       Current Book Value
                     </p>
                     <p className="font-headline-sm text-headline-sm font-bold text-primary mt-xs">
-                      ${assetData.summary.totalCurrentValue.toLocaleString(
-                        undefined,
+                      ₹{assetData.summary.totalCurrentValue.toLocaleString(
+                        "en-IN",
                         { minimumFractionDigits: 2, maximumFractionDigits: 2 }
                       )}
                     </p>
@@ -296,13 +296,13 @@ export const Reports: React.FC = () => {
                             {asset.name}
                           </td>
                           <td className="py-3 px-md font-mono font-bold">
-                            ${asset.cost.toFixed(2)}
+                            ₹{asset.cost.toFixed(2)}
                           </td>
                           <td className="py-3 px-md font-mono text-red-700 font-bold">
-                            -${asset.depreciatedAmount.toFixed(2)}
+                            -₹{asset.depreciatedAmount.toFixed(2)}
                           </td>
                           <td className="py-3 px-md font-mono text-emerald-700 font-bold">
-                            ${asset.currentValue.toFixed(2)}
+                            ₹{asset.currentValue.toFixed(2)}
                           </td>
                         </tr>
                       ))}
@@ -339,7 +339,7 @@ export const Reports: React.FC = () => {
                       Accumulated Repair Cost
                     </p>
                     <p className="font-headline-sm text-headline-sm font-bold text-primary mt-xs">
-                      ${maintData.summary.totalCost.toLocaleString(undefined, {
+                      ₹{maintData.summary.totalCost.toLocaleString("en-IN", {
                         minimumFractionDigits: 2,
                         maximumFractionDigits: 2,
                       })}

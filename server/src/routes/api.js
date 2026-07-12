@@ -45,6 +45,7 @@ import {
   updateMaintenanceRequest,
 } from "../controllers/maintenanceController.js";
 import {
+  getAudits,
   getAuditById,
   createAuditCycle,
   updateAuditCycleStatus,
@@ -143,7 +144,7 @@ router.put(
 );
 
 // Audit Cycle Management
-router.get("/audit", managerOrAdmin);
+router.get("/audit", managerOrAdmin, getAudits);
 router.get("/audit/:id", getAuditById); // Auditor can also access
 router.post("/audit", managerOrAdmin, createAuditCycle);
 router.put("/audit/:id", managerOrAdmin, updateAuditCycleStatus);
