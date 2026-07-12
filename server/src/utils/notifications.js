@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { sendEmailNotification } from "./email.js";
 
 const prisma = new PrismaClient();
 
@@ -18,6 +19,22 @@ export const createNotification = async (
         isRead: false,
       },
     });
+
+    // Fetch user's email to send email notification
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+
+    if (user && user.email) {
+      const emailSubject = `[AssetFlow] ${title}`;
+      const emailText = `Hello,\n\nYou have a new notification from AssetFlow ERP:\n\nSubject: ${title}\nMessage: ${message}\n\nBest regards,\nAssetFlow Team`;
+      
+      // Send email asynchronously so we don't delay the API response
+      sendEmailNotification(user.email, emailSubject, emailText).catch((err) => {
+        console.error("Async email notification failed:", err);
+      });
+    }
   } catch (error) {
     console.error("Failed to create notification:", error);
   }
