@@ -98,7 +98,6 @@ export const getAssetById = async (req, res) => {
 
 export const createAsset = async (req, res) => {
   const {
-    assetTag,
     name,
     categoryId,
     brand,
@@ -118,23 +117,27 @@ export const createAsset = async (req, res) => {
 
   const userId = req.user.id;
 
-  if (!assetTag || !name || !categoryId || !purchaseDate || !purchaseCost) {
+  if (!name || !categoryId || !purchaseDate || !purchaseCost) {
     return res
       .status(400)
       .json({
         message:
-          "Asset Tag, Name, Category, Purchase Date and Purchase Cost are required",
+          "Name, Category, Purchase Date and Purchase Cost are required",
       });
   }
 
   try {
-    // Check assetTag duplicate
-    const existingTag = await prisma.asset.findUnique({ where: { assetTag } });
-    if (existingTag) {
-      return res
-        .status(400)
-        .json({ message: "Asset Tag is already registered" });
+    // Auto-generate Asset Tag: find last tag with AST- prefix
+    const lastAsset = await prisma.asset.findFirst({
+      where: { assetTag: { startsWith: "AST-" } },
+      orderBy: { assetTag: "desc" },
+    });
+    let newTagNumber = 1;
+    if (lastAsset) {
+      const lastNum = parseInt(lastAsset.assetTag.replace("AST-", ""), 10);
+      if (!isNaN(lastNum)) newTagNumber = lastNum + 1;
     }
+    const assetTag = `AST-${String(newTagNumber).padStart(3, "0")}`;
 
     // Check serialNumber duplicate if provided
     if (serialNumber) {
