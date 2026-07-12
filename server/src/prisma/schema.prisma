@@ -1,0 +1,366 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @unique // "Admin", "Asset Manager", "Department Head", "Employee"
+  users User[]
+
+  @@map("roles")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  email        String        @unique
+  password     String
+  roleId       Int
+  role         Role          @relation(fields: [roleId], references: [id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  
+  employee     Employee?
+  activityLogs ActivityLog[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model Department {
+  id               Int               @id @default(autoincrement())
+  name             String            @unique
+  description      String?
+  parentId         Int?
+  parentDepartment Department?       @relation("SubDepartments", fields: [parentId], references: [id])
+  subDepartments   Department[]      @relation("SubDepartments")
+  headId           Int?              @unique
+  head             Employee?         @relation("DepartmentHead", fields: [headId], references: [id])
+  status           String            @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  
+  employees        Employee[]        @relation("DepartmentEmployees")
+  assets           Asset[]
+  allocations      AssetAllocation[]
+
+  @@map("departments")
+}
+
+model Employee {
+  id           Int        @id @default(autoincrement())
+  employeeCode String     @unique
+  name         String
+  email        String     @unique
+  phone        String?
+  designation  String?
+  joiningDate  DateTime   @default(now())
+  profilePhoto String?
+  status       String     @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  userId       Int?       @unique
+  user         User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  departmentId Int?
+  department   Department? @relation("DepartmentEmployees", fields: [departmentId], references: [id])
+  
+  headedDepartment Department? @relation("DepartmentHead")
+  
+  allocations      AssetAllocation[]    @relation("EmployeeAllocations")
+  allocatedByUs    AssetAllocation[]    @relation("AllocatedBy")
+  transfers        AssetTransfer[]      @relation("EmployeeTransfers")
+  bookings         ResourceBooking[]
+  maintenanceReqs  MaintenanceRequest[] @relation("RequestedBy")
+  assignedMaint    MaintenanceRequest[] @relation("AssignedTo")
+  auditedCycles    AuditCycle[]         @relation("Auditor")
+
+  @@map("employees")
+}
+
+model AssetCategory {
+  id               Int      @id @default(autoincrement())
+  name             String   @unique
+  description      String?
+  warrantyPeriod   Int      // in months
+  depreciationYears Int     // in years
+  bookable         Boolean  @default(false)
+  status           String   @default("ACTIVE") // ACTIVE, INACTIVE
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  assets           Asset[]
+  
+  @@map("asset_categories")
+}
+
+enum AssetStatus {
+  AVAILABLE
+  ALLOCATED
+  RESERVED
+  MAINTENANCE
+  LOST
+  RETIRED
+  DISPOSED
+}
+
+model Asset {
+  id            Int             @id @default(autoincrement())
+  assetTag      String          @unique
+  name          String
+  brand         String?
+  model         String?
+  serialNumber  String?         @unique
+  purchaseDate  DateTime
+  purchaseCost  Float
+  vendor        String?
+  warrantyEndDate DateTime?
+  location      String?
+  condition     String          @default("NEW") // NEW, GOOD, FAIR, POOR, DAMAGED
+  bookable      Boolean         @default(false)
+  remarks       String?
+  status        AssetStatus     @default(AVAILABLE)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  
+  categoryId    Int
+  category      AssetCategory   @relation(fields: [categoryId], references: [id])
+  
+  departmentId  Int?
+  department    Department?     @relation(fields: [departmentId], references: [id])
+  
+  images              AssetImage[]
+  allocations         AssetAllocation[]
+  transfers           AssetTransfer[]
+  bookings            ResourceBooking[]
+  maintenanceRequests MaintenanceRequest[]
+  auditDetails        AuditDetail[]
+
+  @@map("assets")
+}
+
+model AssetImage {
+  id        Int      @id @default(autoincrement())
+  imagePath String
+  createdAt DateTime @default(now())
+  
+  assetId   Int
+  asset     Asset    @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  
+  @@map("asset_images")
+}
+
+model AssetAllocation {
+  id                 Int       @id @default(autoincrement())
+  allocationDate     DateTime  @default(now())
+  expectedReturnDate DateTime?
+  actualReturnDate   DateTime?
+  status             String    @default("ACTIVE") // ACTIVE, RETURNED, OVERDUE
+  conditionBefore    String
+  conditionAfter     String?
+  notes              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  
+  assetId            Int
+  asset              Asset     @relation(fields: [assetId], references: [id])
+  
+  employeeId         Int
+  employee           Employee  @relation("EmployeeAllocations", fields: [employeeId], references: [id])
+  
+  departmentId       Int?
+  department         Department? @relation(fields: [departmentId], references: [id])
+  
+  allocatedById      Int
+  allocatedBy        Employee  @relation("AllocatedBy", fields: [allocatedById], references: [id])
+  
+  @@map("asset_allocations")
+}
+
+enum TransferStatus {
+  REQUESTED
+  APPROVED_BY_HOD
+  APPROVED_BY_MANAGER
+  TRANSFERRED
+  REJECTED
+}
+
+model AssetTransfer {
+  id                 Int            @id @default(autoincrement())
+  status             TransferStatus @default(REQUESTED)
+  remarks            String?
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  
+  assetId            Int
+  asset              Asset          @relation(fields: [assetId], references: [id])
+  
+  employeeId         Int
+  employee           Employee       @relation("EmployeeTransfers", fields: [employeeId], references: [id])
+  
+  fromDepartmentId   Int
+  toDepartmentId     Int
+  
+  @@map("asset_transfers")
+}
+
+enum BookingStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+model ResourceBooking {
+  id          Int           @id @default(autoincrement())
+  date        DateTime
+  startTime   String        // e.g. "09:00"
+  endTime     String        // e.g. "10:30"
+  purpose     String?
+  status      BookingStatus @default(PENDING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  assetId     Int
+  asset       Asset         @relation(fields: [assetId], references: [id])
+  
+  employeeId  Int
+  employee    Employee      @relation(fields: [employeeId], references: [id])
+  
+  @@map("resource_bookings")
+}
+
+enum MaintenancePriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum MaintenanceStatus {
+  PENDING
+  APPROVED
+  TECHNICIAN_ASSIGNED
+  IN_PROGRESS
+  COMPLETED
+  CLOSED
+  REJECTED
+}
+
+model MaintenanceRequest {
+  id           Int                 @id @default(autoincrement())
+  issue        String
+  priority     MaintenancePriority @default(MEDIUM)
+  cost         Float               @default(0.0)
+  attachments  String?             // comma-separated or JSON paths
+  remarks      String?
+  status       MaintenanceStatus   @default(PENDING)
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  
+  assetId      Int
+  asset        Asset               @relation(fields: [assetId], references: [id])
+  
+  requestedById Int
+  requestedBy  Employee            @relation("RequestedBy", fields: [requestedById], references: [id])
+  
+  assignedToId Int?
+  assignedTo   Employee?           @relation("AssignedTo", fields: [assignedToId], references: [id])
+  
+  history      MaintenanceHistory[]
+  
+  @@map("maintenance_requests")
+}
+
+model MaintenanceHistory {
+  id           Int               @id @default(autoincrement())
+  status       MaintenanceStatus
+  notes        String?
+  updatedById  Int
+  updatedAt    DateTime          @default(now())
+  
+  requestId    Int
+  request      MaintenanceRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  
+  @@map("maintenance_history")
+}
+
+enum AuditStatus {
+  DRAFT
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+model AuditCycle {
+  id           Int         @id @default(autoincrement())
+  name         String      // e.g. "Q3 2026 Audit"
+  startDate    DateTime
+  endDate      DateTime
+  status       AuditStatus @default(DRAFT)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  
+  auditorId    Int
+  auditor      Employee    @relation("Auditor", fields: [auditorId], references: [id])
+  
+  details      AuditDetail[]
+  
+  @@map("audit_cycles")
+}
+
+enum AuditVerificationStatus {
+  PENDING
+  VERIFIED
+  MISSING
+  DAMAGED
+  DISPOSED
+}
+
+model AuditDetail {
+  id                 Int                     @id @default(autoincrement())
+  verificationStatus AuditVerificationStatus @default(PENDING)
+  notes              String?
+  verifiedAt         DateTime?
+  
+  auditCycleId       Int
+  auditCycle         AuditCycle              @relation(fields: [auditCycleId], references: [id], onDelete: Cascade)
+  
+  assetId            Int
+  asset              Asset                   @relation(fields: [assetId], references: [id])
+  
+  @@map("audit_details")
+}
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  title     String
+  message   String
+  type      String   // INFO, WARNING, SUCCESS
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("notifications")
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String   // e.g. "CREATE_DEPARTMENT"
+  details   String   // e.g. "Admin created department HR"
+  ipAddress String?
+  browser   String?
+  createdAt DateTime @default(now())
+  
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("activity_logs")
+}
