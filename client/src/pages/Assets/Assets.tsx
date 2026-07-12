@@ -229,7 +229,7 @@ export const Assets: React.FC = () => {
             Total Asset Value
           </p>
           <h3 className="font-headline-md text-headline-md text-primary font-bold">
-            ${totalValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            ₹{totalValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </h3>
           <div className="absolute top-0 left-0 w-1 h-full bg-blue-600"></div>
         </div>
@@ -344,7 +344,7 @@ export const Assets: React.FC = () => {
                 <th className="py-3 px-md border-r border-white/10">Status</th>
                 <th className="py-3 px-md border-r border-white/10">Location</th>
                 <th className="py-3 px-md border-r border-white/10">Condition</th>
-                <th className="py-3 px-md border-r border-white/10 text-right">Value (USD)</th>
+                <th className="py-3 px-md border-r border-white/10 text-right">Value (INR)</th>
                 {isManagerOrAdmin && <th className="py-3 px-md text-right">Actions</th>}
               </tr>
             </thead>
@@ -402,7 +402,7 @@ export const Assets: React.FC = () => {
                         </span>
                       </td>
                       <td className="py-3 px-md text-right font-mono font-bold text-primary">
-                        ${(asset.purchaseCost || 0).toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                        ₹{(asset.purchaseCost || 0).toLocaleString("en-IN", { minimumFractionDigits: 2 })}
                       </td>
                       {isManagerOrAdmin && (
                         <td className="py-3 px-md text-right space-x-2 whitespace-nowrap">
@@ -586,7 +586,7 @@ export const Assets: React.FC = () => {
                 </div>
 
                 <div className="space-y-xs">
-                  <label className="font-label-md text-label-md text-primary">Purchase Cost (USD) *</label>
+                  <label className="font-label-md text-label-md text-primary">Purchase Cost (INR) *</label>
                   <div className="relative flex items-center border border-outline-variant rounded transition-all bg-surface-container-lowest h-10 px-sm">
                     <input
                       type="number"

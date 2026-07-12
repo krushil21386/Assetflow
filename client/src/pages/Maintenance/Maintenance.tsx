@@ -162,7 +162,7 @@ export const Maintenance: React.FC = () => {
                   <th className="py-3 px-md border-r border-white/10">Priority</th>
                   <th className="py-3 px-md border-r border-white/10">Reported By</th>
                   <th className="py-3 px-md border-r border-white/10">Technician Assigned</th>
-                  <th className="py-3 px-md border-r border-white/10">Cost (USD)</th>
+                  <th className="py-3 px-md border-r border-white/10">Cost (INR)</th>
                   <th className="py-3 px-md border-r border-white/10">Status</th>
                   <th className="py-3 px-md text-right">Actions</th>
                 </tr>
@@ -392,7 +392,7 @@ export const Maintenance: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-md">
                 <div className="space-y-xs">
-                  <label className="font-label-md text-label-md text-primary">Maintenance Cost (USD)</label>
+                  <label className="font-label-md text-label-md text-primary">Maintenance Cost (INR)</label>
                   <div className="relative flex items-center border border-outline-variant rounded transition-all bg-surface-container-lowest h-10 px-sm">
                     <input
                       type="number"
