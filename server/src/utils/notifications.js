@@ -1,8 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export const createNotification = async (userId: number, title: string, message: string, type: string = 'INFO') => {
+export const createNotification = async (
+  userId,
+  title,
+  message,
+  type = "INFO",
+) => {
   try {
     await prisma.notification.create({
       data: {
@@ -14,39 +19,43 @@ export const createNotification = async (userId: number, title: string, message:
       },
     });
   } catch (error) {
-    console.error('Failed to create notification:', error);
+    console.error("Failed to create notification:", error);
   }
 };
 
-export const notifyDepartmentHead = async (departmentId: number, title: string, message: string, type: string = 'INFO') => {
+export const notifyDepartmentHead = async (
+  departmentId,
+  title,
+  message,
+  type = "INFO",
+) => {
   try {
     const dept = await prisma.department.findUnique({
       where: { id: departmentId },
       include: { head: true },
     });
-    
     if (dept?.head?.userId) {
       await createNotification(dept.head.userId, title, message, type);
     }
   } catch (error) {
-    console.error('Failed to notify department head:', error);
+    console.error("Failed to notify department head:", error);
   }
 };
 
-export const notifyRoles = async (roleNames: string[], title: string, message: string, type: string = 'INFO') => {
+export const notifyRoles = async (roleNames, title, message, type = "INFO") => {
   try {
     const users = await prisma.user.findMany({
       where: {
         role: {
-          name: { in: roleNames }
-        }
-      }
+          name: { in: roleNames },
+        },
+      },
     });
 
     for (const user of users) {
       await createNotification(user.id, title, message, type);
     }
   } catch (error) {
-    console.error('Failed to notify roles:', error);
+    console.error("Failed to notify roles:", error);
   }
 };

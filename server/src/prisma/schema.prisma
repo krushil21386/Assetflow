@@ -1,5 +1,5 @@
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -99,16 +99,6 @@ model AssetCategory {
   @@map("asset_categories")
 }
 
-enum AssetStatus {
-  AVAILABLE
-  ALLOCATED
-  RESERVED
-  MAINTENANCE
-  LOST
-  RETIRED
-  DISPOSED
-}
-
 model Asset {
   id            Int             @id @default(autoincrement())
   assetTag      String          @unique
@@ -124,7 +114,7 @@ model Asset {
   condition     String          @default("NEW") // NEW, GOOD, FAIR, POOR, DAMAGED
   bookable      Boolean         @default(false)
   remarks       String?
-  status        AssetStatus     @default(AVAILABLE)
+  status        String          @default("AVAILABLE")
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   
@@ -182,17 +172,9 @@ model AssetAllocation {
   @@map("asset_allocations")
 }
 
-enum TransferStatus {
-  REQUESTED
-  APPROVED_BY_HOD
-  APPROVED_BY_MANAGER
-  TRANSFERRED
-  REJECTED
-}
-
 model AssetTransfer {
   id                 Int            @id @default(autoincrement())
-  status             TransferStatus @default(REQUESTED)
+  status             String         @default("REQUESTED")
   remarks            String?
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
@@ -209,20 +191,13 @@ model AssetTransfer {
   @@map("asset_transfers")
 }
 
-enum BookingStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
-}
-
 model ResourceBooking {
   id          Int           @id @default(autoincrement())
   date        DateTime
   startTime   String        // e.g. "09:00"
   endTime     String        // e.g. "10:30"
   purpose     String?
-  status      BookingStatus @default(PENDING)
+  status      String        @default("PENDING")
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
   
@@ -235,31 +210,14 @@ model ResourceBooking {
   @@map("resource_bookings")
 }
 
-enum MaintenancePriority {
-  LOW
-  MEDIUM
-  HIGH
-  CRITICAL
-}
-
-enum MaintenanceStatus {
-  PENDING
-  APPROVED
-  TECHNICIAN_ASSIGNED
-  IN_PROGRESS
-  COMPLETED
-  CLOSED
-  REJECTED
-}
-
 model MaintenanceRequest {
   id           Int                 @id @default(autoincrement())
   issue        String
-  priority     MaintenancePriority @default(MEDIUM)
+  priority     String              @default("MEDIUM")
   cost         Float               @default(0.0)
   attachments  String?             // comma-separated or JSON paths
   remarks      String?
-  status       MaintenanceStatus   @default(PENDING)
+  status       String              @default("PENDING")
   createdAt    DateTime            @default(now())
   updatedAt    DateTime            @updatedAt
   
@@ -279,7 +237,7 @@ model MaintenanceRequest {
 
 model MaintenanceHistory {
   id           Int               @id @default(autoincrement())
-  status       MaintenanceStatus
+  status       String
   notes        String?
   updatedById  Int
   updatedAt    DateTime          @default(now())
@@ -290,19 +248,12 @@ model MaintenanceHistory {
   @@map("maintenance_history")
 }
 
-enum AuditStatus {
-  DRAFT
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-}
-
 model AuditCycle {
   id           Int         @id @default(autoincrement())
   name         String      // e.g. "Q3 2026 Audit"
   startDate    DateTime
   endDate      DateTime
-  status       AuditStatus @default(DRAFT)
+  status       String      @default("DRAFT")
   createdAt    DateTime    @default(now())
   updatedAt    DateTime    @updatedAt
   
@@ -314,17 +265,9 @@ model AuditCycle {
   @@map("audit_cycles")
 }
 
-enum AuditVerificationStatus {
-  PENDING
-  VERIFIED
-  MISSING
-  DAMAGED
-  DISPOSED
-}
-
 model AuditDetail {
   id                 Int                     @id @default(autoincrement())
-  verificationStatus AuditVerificationStatus @default(PENDING)
+  verificationStatus String                  @default("PENDING")
   notes              String?
   verifiedAt         DateTime?
   

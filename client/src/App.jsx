@@ -1,25 +1,30 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
-import { DashboardLayout } from './layouts/DashboardLayout';
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { DashboardLayout } from "./layouts/DashboardLayout";
 
 // Pages
-import { Login } from './pages/Auth/Login';
-import { Signup } from './pages/Auth/Signup';
-import { Dashboard } from './pages/Dashboard/Dashboard';
-import { Departments } from './pages/Departments/Departments';
-import { Categories } from './pages/Categories/Categories';
-import { Employees } from './pages/Employees/Employees';
-import { Assets } from './pages/Assets/Assets';
-import { Allocations } from './pages/Allocation/Allocations';
-import { Bookings } from './pages/Booking/Bookings';
-import { Maintenance } from './pages/Maintenance/Maintenance';
-import { Auditing } from './pages/Audit/Auditing';
-import { Reports } from './pages/Reports/Reports';
-import { Logs } from './pages/Settings/Logs';
+import { Login } from "./pages/Auth/Login";
+import { Signup } from "./pages/Auth/Signup";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import { Departments } from "./pages/Departments/Departments";
+import { Categories } from "./pages/Categories/Categories";
+import { Employees } from "./pages/Employees/Employees";
+import { Assets } from "./pages/Assets/Assets";
+import { Allocations } from "./pages/Allocation/Allocations";
+import { Bookings } from "./pages/Booking/Bookings";
+import { Maintenance } from "./pages/Maintenance/Maintenance";
+import { Auditing } from "./pages/Audit/Auditing";
+import { Reports } from "./pages/Reports/Reports";
+import { Logs } from "./pages/Logs/Logs";
 
 // Route Guard
-const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: string[] }> = ({ children, allowedRoles }) => {
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -42,125 +47,135 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: strin
   return <>{children}</>;
 };
 
-const App: React.FC = () => {
+const App = () => {
   return (
     <AuthProvider>
-      <Router>
+      <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <Routes>
           {/* Public Routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
 
           {/* Protected Dashboard Layout Routes */}
-          <Route 
-            path="/" 
+          <Route
+            path="/"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <Dashboard />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/departments" 
+
+          <Route
+            path="/departments"
             element={
-              <ProtectedRoute allowedRoles={['Admin']}>
+              <ProtectedRoute allowedRoles={["Admin"]}>
                 <DashboardLayout>
                   <Departments />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/categories" 
+
+          <Route
+            path="/categories"
             element={
-              <ProtectedRoute allowedRoles={['Admin']}>
+              <ProtectedRoute allowedRoles={["Admin"]}>
                 <DashboardLayout>
                   <Categories />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/employees" 
+
+          <Route
+            path="/employees"
             element={
-              <ProtectedRoute allowedRoles={['Admin']}>
+              <ProtectedRoute allowedRoles={["Admin"]}>
                 <DashboardLayout>
                   <Employees />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/assets" 
+
+          <Route
+            path="/assets"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <Assets />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/transfers" 
+
+          <Route
+            path="/transfers"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <Allocations />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/bookings" 
+
+          <Route
+            path="/bookings"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <Bookings />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/maintenance" 
+
+          <Route
+            path="/maintenance"
             element={
               <ProtectedRoute>
                 <DashboardLayout>
                   <Maintenance />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/audits" 
+
+          <Route
+            path="/audits"
             element={
-              <ProtectedRoute allowedRoles={['Admin', 'Asset Manager']}>
+              <ProtectedRoute allowedRoles={["Admin", "Asset Manager"]}>
                 <DashboardLayout>
                   <Auditing />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/reports" 
+
+          <Route
+            path="/reports"
             element={
-              <ProtectedRoute allowedRoles={['Admin', 'Asset Manager']}>
+              <ProtectedRoute allowedRoles={["Admin", "Asset Manager"]}>
                 <DashboardLayout>
                   <Reports />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
-          <Route 
-            path="/logs" 
+
+          <Route
+            path="/logs"
             element={
-              <ProtectedRoute allowedRoles={['Admin']}>
+              <ProtectedRoute allowedRoles={["Admin"]}>
                 <DashboardLayout>
                   <Logs />
                 </DashboardLayout>
               </ProtectedRoute>
-            } 
+            }
           />
 
           {/* Catch-all */}

@@ -1,17 +1,18 @@
-import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import * as bcrypt from 'bcryptjs';
-import * as jwt from 'jsonwebtoken';
-import { logActivity } from '../utils/logger';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+import { logActivity } from "../utils/logger.js";
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET || 'nexasset_secure_token_key_2026';
+const JWT_SECRET = process.env.JWT_SECRET || "nexasset_secure_token_key_2026";
 
-export const signup = async (req: Request, res: Response) => {
+export const signup = async (req, res) => {
   const { name, email, password, departmentId } = req.body;
 
   if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Name, email and password are required' });
+    return res
+      .status(400)
+      .json({ message: "Name, email and password are required" });
   }
 
   try {
@@ -20,7 +21,9 @@ export const signup = async (req: Request, res: Response) => {
     });
 
     if (existingUser) {
-      return res.status(400).json({ message: 'User with this email already exists' });
+      return res
+        .status(400)
+        .json({ message: "User with this email already exists" });
     }
 
     // Hash Password
@@ -28,22 +31,24 @@ export const signup = async (req: Request, res: Response) => {
 
     // Get default Employee role
     const employeeRole = await prisma.role.findUnique({
-      where: { name: 'Employee' },
+      where: { name: "Employee" },
     });
 
     if (!employeeRole) {
-      return res.status(500).json({ message: 'Default role not configured' });
+      return res.status(500).json({ message: "Default role not configured" });
     }
 
     // Auto-generate employee code
     const lastEmployee = await prisma.employee.findFirst({
-      orderBy: { employeeCode: 'desc' },
+      orderBy: { employeeCode: "desc" },
     });
-    
-    let newCode = 'EMP001';
-    if (lastEmployee && lastEmployee.employeeCode.startsWith('EMP')) {
-      const lastNum = parseInt(lastEmployee.employeeCode.replace('EMP', ''), 10);
-      newCode = `EMP${String(lastNum + 1).padStart(3, '0')}`;
+    let newCode = "EMP001";
+    if (lastEmployee && lastEmployee.employeeCode.startsWith("EMP")) {
+      const lastNum = parseInt(
+        lastEmployee.employeeCode.replace("EMP", ""),
+        10,
+      );
+      newCode = `EMP${String(lastNum + 1).padStart(3, "0")}`;
     }
 
     // Create User & Employee in a transaction
@@ -62,7 +67,7 @@ export const signup = async (req: Request, res: Response) => {
           name,
           email,
           joiningDate: new Date(),
-          status: 'ACTIVE',
+          status: "ACTIVE",
           userId: user.id,
           departmentId: departmentId ? parseInt(departmentId, 10) : null,
         },
@@ -73,11 +78,16 @@ export const signup = async (req: Request, res: Response) => {
 
     // Generate JWT
     const token = jwt.sign({ userId: result.user.id }, JWT_SECRET, {
-      expiresIn: '24h',
+      expiresIn: "24h",
     });
 
     // Log Activity
-    await logActivity(result.user.id, 'SIGNUP', `User ${email} registered with code ${newCode}`, req);
+    await logActivity(
+      result.user.id,
+      "SIGNUP",
+      `User ${email} registered with code ${newCode}`,
+      req,
+    );
 
     return res.status(201).json({
       token,
@@ -94,16 +104,18 @@ export const signup = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Signup Error:', error);
-    return res.status(500).json({ message: 'Internal Server Error during registration' });
+    console.error("Signup Error:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error during registration" });
   }
 };
 
-export const login = async (req: Request, res: Response) => {
+export const login = async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ message: 'Email and password are required' });
+    return res.status(400).json({ message: "Email and password are required" });
   }
 
   try {
@@ -116,25 +128,27 @@ export const login = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: 'Invalid email or password' });
+      return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    if (user.employee?.status !== 'ACTIVE') {
-      return res.status(403).json({ message: 'Your account is inactive. Contact Administrator' });
+    if (user.employee?.status !== "ACTIVE") {
+      return res
+        .status(403)
+        .json({ message: "Your account is inactive. Contact Administrator" });
     }
 
     // Generate JWT
     const token = jwt.sign({ userId: user.id }, JWT_SECRET, {
-      expiresIn: '24h',
+      expiresIn: "24h",
     });
 
     // Log Activity
-    await logActivity(user.id, 'LOGIN', `User ${email} logged in`, req);
+    await logActivity(user.id, "LOGIN", `User ${email} logged in`, req);
 
     return res.status(200).json({
       token,
@@ -151,24 +165,26 @@ export const login = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Login Error:', error);
-    return res.status(500).json({ message: 'Internal Server Error during login' });
+    console.error("Login Error:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal Server Error during login" });
   }
 };
 
-export const logout = async (req: Request, res: Response) => {
+export const logout = async (req, res) => {
   // Authentication is stateless with JWT, so we just log the activity if user is present
-  const userId = (req as any).user?.id;
+  const userId = req.user?.id;
   if (userId) {
-    await logActivity(userId, 'LOGOUT', 'User logged out', req);
+    await logActivity(userId, "LOGOUT", "User logged out", req);
   }
-  return res.status(200).json({ message: 'Logged out successfully' });
+  return res.status(200).json({ message: "Logged out successfully" });
 };
 
-export const getMe = async (req: Request, res: Response) => {
-  const authUser = (req as any).user;
+export const getMe = async (req, res) => {
+  const authUser = req.user;
   if (!authUser) {
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(401).json({ message: "Unauthorized" });
   }
 
   try {
@@ -178,14 +194,14 @@ export const getMe = async (req: Request, res: Response) => {
         role: true,
         employee: {
           include: {
-            department: true
-          }
+            department: true,
+          },
         },
       },
     });
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     return res.status(200).json({
@@ -197,7 +213,7 @@ export const getMe = async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
-    console.error('Get Me Error:', error);
-    return res.status(500).json({ message: 'Internal Server Error' });
+    console.error("Get Me Error:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };

@@ -1,15 +1,15 @@
 {
   "name": "nexasset-server",
   "version": "1.0.0",
+  "type": "module",
   "description": "Backend API for NexAsset ERP",
-  "main": "dist/server.js",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "prisma:seed": "ts-node src/prisma/seed.ts"
+    "prisma:seed": "node src/prisma/seed.js"
   },
   "dependencies": {
     "@prisma/client": "^5.12.1",
@@ -34,6 +34,7 @@
     "typescript": "^5.4.5"
   },
   "prisma": {
-    "seed": "ts-node src/prisma/seed.ts"
+    "schema": "src/prisma/schema.prisma",
+    "seed": "node src/prisma/seed.js"
   }
 }

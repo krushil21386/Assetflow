@@ -1,32 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
-import { User, Mail, Lock, Building2, AlertCircle } from 'lucide-react';
-
-interface Department {
-  id: number;
-  name: string;
-}
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
+import type { Department } from "../../types";
 
 export const Signup: React.FC = () => {
   const { signup } = useAuth();
   const navigate = useNavigate();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [departmentId, setDepartmentId] = useState('');
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [departmentId, setDepartmentId] = useState<string>("");
   const [departments, setDepartments] = useState<Department[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      const moveX = (e.clientX - window.innerWidth / 2) / 50;
+      const moveY = (e.clientY - window.innerHeight / 2) / 50;
+      setMousePosition({ x: moveX, y: moveY });
+    };
+    
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   useEffect(() => {
     const fetchDepts = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/departments');
+        const res = await api.get("/departments");
         setDepartments(res.data);
       } catch (err) {
-        console.error('Failed to load departments', err);
+        console.error("Failed to load departments", err);
       }
     };
     fetchDepts();
@@ -35,132 +42,169 @@ export const Signup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !email || !password) {
-      setError('Please fill in all required fields');
+      setError("Please fill in all required fields");
       return;
     }
 
     setError(null);
     setSubmitting(true);
     try {
-      await signup(name, email, password, departmentId ? parseInt(departmentId, 10) : undefined);
-      navigate('/');
+      await signup(
+        name,
+        email,
+        password,
+        departmentId ? parseInt(departmentId, 10) : undefined,
+      );
+      navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Try again.');
+      setError(
+        err.response?.data?.message || "Registration failed. Try again.",
+      );
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative">
-      <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-brand-500/10 rounded-full blur-3xl -z-10 animate-pulse"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-brand-600/10 rounded-full blur-3xl -z-10"></div>
+    <div className="font-body-md text-on-surface min-h-screen flex items-center justify-center p-md bg-[#f7f9fb] overflow-hidden relative">
+      {/* Ambient Background Effects */}
+      <div 
+        className="ambient-glow glow-emerald animate-pulse"
+        style={{ transform: `translate(${mousePosition.x}px, ${mousePosition.y}px)` }}
+      ></div>
+      <div 
+        className="ambient-glow glow-blue animate-pulse" 
+        style={{ animationDelay: '2s', transform: `translate(${-mousePosition.x}px, ${-mousePosition.y}px)` }}
+      ></div>
 
-      <div className="w-full max-w-md glass-panel p-8 rounded-3xl border border-dark-border shadow-2xl relative">
-        <div className="text-center mb-8">
-          <div className="h-12 w-12 rounded-2xl bg-gradient-to-tr from-brand-500 to-brand-600 flex items-center justify-center font-bold text-white text-2xl shadow-lg mx-auto mb-3">
-            N
+      <main className="relative z-10 w-full max-w-md">
+        {/* Branding Header */}
+        <div className="flex flex-col items-center mb-xl">
+          <div className="flex items-center gap-sm mb-xs">
+            <div className="w-10 h-10 bg-primary flex items-center justify-center rounded-lg">
+              <span className="material-symbols-outlined text-surface-container-lowest text-2xl" style={{ fontVariationSettings: "'FILL' 1" }}>hub</span>
+            </div>
+            <h1 className="font-headline-md text-headline-md text-primary tracking-tight">AssetFlow</h1>
           </div>
-          <h2 className="text-2xl font-bold text-white tracking-wider glow-text">Create Account</h2>
-          <p className="text-sm text-gray-400 mt-1">Register your employee access profile</p>
+          <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest text-[10px]">Enterprise Resource Management</p>
         </div>
 
-        {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-300 text-sm flex items-center gap-2">
-            <AlertCircle size={16} className="shrink-0" />
-            <span>{error}</span>
+        {/* Signup Card */}
+        <div className="glass-panel p-xl shadow-sm rounded-lg">
+          <div className="mb-lg">
+            <h2 className="font-headline-sm text-headline-sm text-primary mb-xs">Create Account</h2>
+            <p className="font-body-sm text-body-sm text-on-surface-variant">Register your employee access profile.</p>
           </div>
-        )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-300 font-medium">Full Name *</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
-                <User size={16} />
-              </span>
-              <input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm"
-                required
-              />
+          {error && (
+            <div className="mb-md p-sm bg-error/10 border border-error/20 rounded text-error font-body-sm text-body-sm flex items-start gap-2">
+              <span className="material-symbols-outlined text-[16px]">error</span>
+              <span>{error}</span>
             </div>
-          </div>
+          )}
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-300 font-medium">Email Address *</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
-                <Mail size={16} />
-              </span>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@company.com"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm"
-                required
-              />
+          <form onSubmit={handleSubmit} className="space-y-md">
+            {/* Full Name Field */}
+            <div className="space-y-xs">
+              <label className="font-label-md text-label-md text-primary block" htmlFor="name">FULL NAME *</label>
+              <div className="relative flex items-center border border-outline-variant rounded transition-all input-focus-effect bg-surface-container-lowest h-10 px-sm">
+                <span className="material-symbols-outlined text-outline text-[18px] mr-sm">person</span>
+                <input 
+                  className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 placeholder:text-outline/50 outline-none" 
+                  id="name" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="John Doe" 
+                  required 
+                  type="text" 
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-300 font-medium">Password *</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
-                <Lock size={16} />
-              </span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm"
-                required
-              />
+            {/* Email Field */}
+            <div className="space-y-xs">
+              <label className="font-label-md text-label-md text-primary block" htmlFor="email">EMAIL ADDRESS *</label>
+              <div className="relative flex items-center border border-outline-variant rounded transition-all input-focus-effect bg-surface-container-lowest h-10 px-sm">
+                <span className="material-symbols-outlined text-outline text-[18px] mr-sm">alternate_email</span>
+                <input 
+                  className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 placeholder:text-outline/50 outline-none" 
+                  id="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@organization.com" 
+                  required 
+                  type="email" 
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="space-y-1">
-            <label className="text-xs font-semibold text-gray-300 font-medium">Department</label>
-            <div className="relative">
-              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400">
-                <Building2 size={16} />
-              </span>
-              <select
-                value={departmentId}
-                onChange={(e) => setDepartmentId(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl glass-input text-sm appearance-none"
-              >
-                <option value="">Select Department...</option>
-                {departments.map((dept) => (
-                  <option key={dept.id} value={dept.id} className="bg-[#080b11]">
-                    {dept.name}
-                  </option>
-                ))}
-              </select>
+            {/* Password Field */}
+            <div className="space-y-xs">
+              <label className="font-label-md text-label-md text-primary block" htmlFor="password">ACCESS KEY *</label>
+              <div className="relative flex items-center border border-outline-variant rounded transition-all input-focus-effect bg-surface-container-lowest h-10 px-sm">
+                <span className="material-symbols-outlined text-outline text-[18px] mr-sm">key</span>
+                <input 
+                  className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 placeholder:text-outline/50 outline-none" 
+                  id="password" 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••" 
+                  required 
+                  type="password" 
+                />
+              </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full py-2.5 rounded-xl font-semibold text-white glass-button-primary text-sm transition-all mt-4"
-          >
-            {submitting ? 'Creating Profile...' : 'Register'}
-          </button>
-        </form>
+            {/* Department Selection */}
+            <div className="space-y-xs">
+              <label className="font-label-md text-label-md text-primary block" htmlFor="department">DEPARTMENT</label>
+              <div className="relative flex items-center border border-outline-variant rounded transition-all input-focus-effect bg-surface-container-lowest h-10 px-sm">
+                <span className="material-symbols-outlined text-outline text-[18px] mr-sm">domain</span>
+                <select 
+                  className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 placeholder:text-outline/50 outline-none appearance-none" 
+                  id="department" 
+                  value={departmentId}
+                  onChange={(e) => setDepartmentId(e.target.value)}
+                >
+                  <option value="" className="text-gray-400">Select Department...</option>
+                  {departments.map((dept) => (
+                    <option key={dept.id} value={dept.id} className="text-gray-800">
+                      {dept.name}
+                    </option>
+                  ))}
+                </select>
+                <span className="material-symbols-outlined text-outline text-[18px] pointer-events-none absolute right-2">arrow_drop_down</span>
+              </div>
+            </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Already have an account?{' '}
-          <Link to="/login" className="text-brand-400 hover:text-brand-300 font-semibold underline">
-            Sign In
-          </Link>
-        </p>
-      </div>
+            {/* Submit Button */}
+            <button 
+              className="w-full h-11 bg-primary hover:bg-[#1e293b] text-white font-label-md text-label-md rounded flex items-center justify-center gap-sm transition-all active:scale-[0.98] shadow-sm mt-lg disabled:opacity-80 disabled:cursor-not-allowed" 
+              type="submit"
+              disabled={submitting}
+            >
+              {submitting ? (
+                <>
+                  <span className="material-symbols-outlined animate-spin text-[18px]">progress_activity</span>
+                  <span>CREATING PROFILE...</span>
+                </>
+              ) : (
+                <>
+                  <span>REGISTER</span>
+                  <span className="material-symbols-outlined text-[18px]">arrow_forward</span>
+                </>
+              )}
+            </button>
+          </form>
+
+          <p className="text-center font-body-sm text-body-sm text-on-surface-variant mt-lg">
+            Already have an account?{" "}
+            <Link to="/login" className="text-secondary font-bold hover:underline">
+              Sign In
+            </Link>
+          </p>
+        </div>
+      </main>
     </div>
   );
 };

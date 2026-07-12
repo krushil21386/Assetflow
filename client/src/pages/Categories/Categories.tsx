@@ -1,32 +1,27 @@
-import React, { useState, useEffect } from 'react';
-import api from '../../services/api';
-import { Tags, Plus, Edit2, Trash2, X } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import api from "../../services/api";
+import type { AssetCategory } from "../../types";
 
-interface Category {
-  id: number;
-  name: string;
-  description?: string;
-  warrantyPeriod: number;
-  depreciationYears: number;
-  bookable: boolean;
-  status: string;
-  _count?: { assets: number };
+interface AssetCategoryWithCounts extends AssetCategory {
+  _count?: {
+    assets: number;
+  };
 }
 
 export const Categories: React.FC = () => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [categories, setCategories] = useState<AssetCategoryWithCounts[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [modalOpen, setModalOpen] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   // Form State
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [warrantyPeriod, setWarrantyPeriod] = useState('');
-  const [depreciationYears, setDepreciationYears] = useState('');
-  const [bookable, setBookable] = useState(false);
-  const [status, setStatus] = useState('ACTIVE');
+  const [name, setName] = useState<string>("");
+  const [description, setDescription] = useState<string>("");
+  const [warrantyPeriod, setWarrantyPeriod] = useState<string>("");
+  const [depreciationYears, setDepreciationYears] = useState<string>("");
+  const [bookable, setBookable] = useState<boolean>(false);
+  const [status, setStatus] = useState<"ACTIVE" | "INACTIVE">("ACTIVE");
 
   useEffect(() => {
     fetchCategories();
@@ -35,7 +30,7 @@ export const Categories: React.FC = () => {
   const fetchCategories = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/categories');
+      const res = await api.get("/categories");
       setCategories(res.data);
     } catch (e) {
       console.error(e);
@@ -46,20 +41,20 @@ export const Categories: React.FC = () => {
 
   const handleOpenCreate = () => {
     setEditingId(null);
-    setName('');
-    setDescription('');
-    setWarrantyPeriod('12');
-    setDepreciationYears('5');
+    setName("");
+    setDescription("");
+    setWarrantyPeriod("12");
+    setDepreciationYears("5");
     setBookable(false);
-    setStatus('ACTIVE');
+    setStatus("ACTIVE");
     setError(null);
     setModalOpen(true);
   };
 
-  const handleOpenEdit = (cat: Category) => {
+  const handleOpenEdit = (cat: AssetCategoryWithCounts) => {
     setEditingId(cat.id);
     setName(cat.name);
-    setDescription(cat.description || '');
+    setDescription(cat.description || "");
     setWarrantyPeriod(String(cat.warrantyPeriod));
     setDepreciationYears(String(cat.depreciationYears));
     setBookable(cat.bookable);
@@ -71,7 +66,7 @@ export const Categories: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !warrantyPeriod || !depreciationYears) {
-      setError('Please fill in all required fields');
+      setError("Please fill in all required fields");
       return;
     }
 
@@ -88,108 +83,130 @@ export const Categories: React.FC = () => {
       if (editingId) {
         await api.put(`/categories/${editingId}`, payload);
       } else {
-        await api.post('/categories', payload);
+        await api.post("/categories", payload);
       }
       setModalOpen(false);
       fetchCategories();
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Action failed.');
+      setError(err.response?.data?.message || "Action failed.");
     }
   };
 
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) return;
+    if (!window.confirm("Are you sure you want to delete this category?"))
+      return;
     try {
       await api.delete(`/categories/${id}`);
       fetchCategories();
     } catch (err: any) {
-      alert(err.response?.data?.message || 'Failed to delete category.');
+      alert(err.response?.data?.message || "Failed to delete category.");
     }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-lg animate-fade-in">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-xl font-bold text-white tracking-wider glow-text">Asset Categories</h1>
-          <p className="text-xs text-gray-400 mt-1">Configure asset templates, depreciation timelines, and bookable states</p>
+          <h1 className="font-headline-md text-headline-md font-bold text-primary tracking-tight">
+            Asset Categories
+          </h1>
+          <p className="font-body-sm text-body-sm text-on-surface-variant">
+            Configure asset templates, depreciation timelines, and bookable states
+          </p>
         </div>
-        <button 
+        <button
           onClick={handleOpenCreate}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-white font-semibold text-xs glass-button-primary"
+          className="flex items-center gap-sm px-lg py-md rounded bg-primary text-white hover:bg-[#1e293b] font-label-md text-label-md transition-all shadow-sm active:scale-95"
         >
-          <Plus size={16} />
+          <span className="material-symbols-outlined text-[18px]">add</span>
           <span>Add Category</span>
         </button>
       </div>
 
       {loading ? (
-        <div className="flex items-center justify-center h-48 text-gray-500">
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-brand-500 mr-2"></div>
-          <span>Loading categories list...</span>
+        <div className="flex items-center justify-center min-h-[300px]">
+          <div className="flex flex-col items-center gap-3">
+            <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+            <span className="font-label-md text-label-md text-on-surface-variant">Loading categories list...</span>
+          </div>
         </div>
       ) : (
-        <div className="glass-card rounded-2xl overflow-hidden border border-dark-border">
+        <div className="bg-white border border-outline-variant rounded-md shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-dark-border text-gray-400 font-semibold bg-white/5">
-                  <th className="py-4 px-6">Category Name</th>
-                  <th className="py-4 px-6">Description</th>
-                  <th className="py-4 px-6">Warranty (Months)</th>
-                  <th className="py-4 px-6">Depreciation (Years)</th>
-                  <th className="py-4 px-6">Bookable</th>
-                  <th className="py-4 px-6">Assets</th>
-                  <th className="py-4 px-6">Status</th>
-                  <th className="py-4 px-6 text-right">Actions</th>
+                <tr className="bg-primary text-white font-label-md text-[10px] uppercase tracking-wider">
+                  <th className="py-3 px-md border-r border-white/10">Category Name</th>
+                  <th className="py-3 px-md border-r border-white/10">Description</th>
+                  <th className="py-3 px-md border-r border-white/10">Warranty (Months)</th>
+                  <th className="py-3 px-md border-r border-white/10">Depreciation (Years)</th>
+                  <th className="py-3 px-md border-r border-white/10">Bookable</th>
+                  <th className="py-3 px-md border-r border-white/10">Assets</th>
+                  <th className="py-3 px-md border-r border-white/10">Status</th>
+                  <th className="py-3 px-md text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-dark-border">
+              <tbody className="divide-y divide-outline-variant font-body-sm text-body-sm">
                 {categories.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="text-center py-8 text-gray-500">No categories found. Click "Add Category" to start.</td>
+                    <td colSpan={8} className="text-center py-xl text-on-surface-variant">
+                      No categories found. Click "Add Category" to start.
+                    </td>
                   </tr>
                 ) : (
                   categories.map((cat) => (
-                    <tr key={cat.id} className="text-gray-300 hover:bg-white/5 transition-colors">
-                      <td className="py-4 px-6 font-bold text-white flex items-center gap-2">
-                        <Tags size={16} className="text-brand-400" />
+                    <tr
+                      key={cat.id}
+                      className="text-on-surface hover:bg-secondary/10 transition-colors"
+                    >
+                      <td className="py-3 px-md font-bold text-primary flex items-center gap-sm">
+                        <span className="material-symbols-outlined text-[20px]">category</span>
                         <span>{cat.name}</span>
                       </td>
-                      <td className="py-4 px-6 max-w-xs truncate">{cat.description || '-'}</td>
-                      <td className="py-4 px-6 font-mono">{cat.warrantyPeriod} mo</td>
-                      <td className="py-4 px-6 font-mono">{cat.depreciationYears} yrs</td>
-                      <td className="py-4 px-6">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
-                          cat.bookable 
-                            ? 'bg-purple-500/10 text-purple-400 border border-purple-500/20' 
-                            : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
-                        }`}>
-                          {cat.bookable ? 'Bookable' : 'Static'}
+                      <td className="py-3 px-md max-w-xs truncate">
+                        {cat.description || "-"}
+                      </td>
+                      <td className="py-3 px-md font-mono">
+                        {cat.warrantyPeriod} mo
+                      </td>
+                      <td className="py-3 px-md font-mono">
+                        {cat.depreciationYears} yrs
+                      </td>
+                      <td className="py-3 px-md">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
+                            cat.bookable
+                              ? "bg-purple-500/10 text-purple-700 border-purple-500/20"
+                              : "bg-outline-variant/30 text-on-surface-variant border-transparent"
+                          }`}
+                        >
+                          {cat.bookable ? "Bookable" : "Static"}
                         </span>
                       </td>
-                      <td className="py-4 px-6">{cat._count?.assets || 0}</td>
-                      <td className="py-4 px-6">
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold border ${
-                          cat.status === 'ACTIVE' 
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
-                            : 'bg-red-500/10 text-red-400 border-red-500/20'
-                        }`}>
+                      <td className="py-3 px-md font-bold">{cat._count?.assets || 0}</td>
+                      <td className="py-3 px-md">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold border uppercase tracking-wider ${
+                            cat.status === "ACTIVE"
+                              ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20"
+                              : "bg-red-500/10 text-red-700 border-red-500/20"
+                          }`}
+                        >
                           {cat.status}
                         </span>
                       </td>
-                      <td className="py-4 px-6 text-right space-x-2 whitespace-nowrap">
-                        <button 
+                      <td className="py-3 px-md text-right space-x-2 whitespace-nowrap">
+                        <button
                           onClick={() => handleOpenEdit(cat)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                          className="p-1 rounded hover:bg-surface-container-high transition-colors text-outline hover:text-primary"
                         >
-                          <Edit2 size={14} />
+                          <span className="material-symbols-outlined text-[18px] block">edit</span>
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDelete(cat.id)}
-                          className="p-1.5 rounded-lg text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                          className="p-1 rounded hover:bg-error/10 transition-colors text-outline hover:text-error"
                         >
-                          <Trash2 size={14} />
+                          <span className="material-symbols-outlined text-[18px] block">delete</span>
                         </button>
                       </td>
                     </tr>
@@ -203,108 +220,131 @@ export const Categories: React.FC = () => {
 
       {/* FORM MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="w-full max-w-md glass-panel p-6 rounded-3xl border border-dark-border shadow-2xl relative animate-fade-in">
-            <div className="flex justify-between items-center pb-4 border-b border-dark-border mb-6">
-              <h3 className="text-base font-bold text-white">{editingId ? 'Edit Category' : 'Create Category'}</h3>
-              <button onClick={() => setModalOpen(false)} className="text-gray-400 hover:text-white">
-                <X size={18} />
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-md bg-black/50 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-white border border-outline-variant p-lg rounded-lg shadow-lg relative animate-fade-in">
+            <div className="flex justify-between items-center pb-sm border-b border-outline-variant mb-md">
+              <h3 className="font-headline-sm text-headline-sm text-primary">
+                {editingId ? "Edit Category" : "Create Category"}
+              </h3>
+              <button
+                onClick={() => setModalOpen(false)}
+                className="text-outline hover:text-primary transition-colors"
+              >
+                <span className="material-symbols-outlined text-[20px] block">close</span>
               </button>
             </div>
 
             {error && (
-              <div className="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-300 text-xs">
+              <div className="mb-md p-sm bg-error/10 border border-error/20 rounded text-error font-body-sm text-body-sm">
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-300">Category Name *</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Laptops, Projectors, Vehicles..."
-                  className="w-full px-4 py-2.5 rounded-xl glass-input text-sm"
-                  required
-                />
+            <form onSubmit={handleSubmit} className="space-y-md">
+              <div className="space-y-xs">
+                <label className="font-label-md text-label-md text-primary">
+                  Category Name *
+                </label>
+                <div className="relative flex items-center border border-outline-variant rounded transition-all input-focus-effect bg-surface-container-lowest h-10 px-sm">
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Laptops, Projectors, Vehicles..."
+                    className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 placeholder:text-outline/50 outline-none"
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-300">Description</label>
+              <div className="space-y-xs">
+                <label className="font-label-md text-label-md text-primary">
+                  Description
+                </label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Brief summary of category uses..."
-                  className="w-full px-4 py-2.5 rounded-xl glass-input text-sm h-20"
+                  className="w-full px-sm py-xs rounded border border-outline-variant focus:ring-1 focus:ring-secondary focus:border-secondary outline-none font-body-md text-body-md bg-surface-container-lowest h-20"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-300">Warranty Period *</label>
-                  <div className="relative">
+              <div className="grid grid-cols-2 gap-md">
+                <div className="space-y-xs">
+                  <label className="font-label-md text-label-md text-primary">
+                    Warranty Period *
+                  </label>
+                  <div className="relative flex items-center border border-outline-variant rounded transition-all bg-surface-container-lowest h-10 px-sm">
                     <input
                       type="number"
                       value={warrantyPeriod}
                       onChange={(e) => setWarrantyPeriod(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl glass-input text-sm pr-12"
+                      className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 outline-none pr-12"
                       placeholder="36"
                       min="0"
                       required
                     />
-                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-gray-500">months</span>
+                    <span className="absolute right-3 text-xs text-on-surface-variant font-bold">mo</span>
                   </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="text-xs font-semibold text-gray-300">Depreciation Years *</label>
-                  <div className="relative">
+                <div className="space-y-xs">
+                  <label className="font-label-md text-label-md text-primary">
+                    Depreciation Years *
+                  </label>
+                  <div className="relative flex items-center border border-outline-variant rounded transition-all bg-surface-container-lowest h-10 px-sm">
                     <input
                       type="number"
                       value={depreciationYears}
                       onChange={(e) => setDepreciationYears(e.target.value)}
-                      className="w-full px-4 py-2.5 rounded-xl glass-input text-sm pr-12"
+                      className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 outline-none pr-12"
                       placeholder="5"
                       min="0"
                       required
                     />
-                    <span className="absolute inset-y-0 right-0 pr-3 flex items-center text-xs text-gray-500">years</span>
+                    <span className="absolute right-3 text-xs text-on-surface-variant font-bold">yrs</span>
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 py-2">
+              <div className="flex items-center gap-sm py-xs cursor-pointer select-none">
                 <input
                   type="checkbox"
                   id="bookable"
                   checked={bookable}
                   onChange={(e) => setBookable(e.target.checked)}
-                  className="rounded border-gray-700 bg-gray-900 text-brand-500 focus:ring-0 h-4 w-4 cursor-pointer"
+                  className="rounded border-outline-variant text-secondary focus:ring-secondary/20 h-4 w-4 cursor-pointer"
                 />
-                <label htmlFor="bookable" className="text-xs font-semibold text-gray-300 cursor-pointer select-none">
+                <label
+                  htmlFor="bookable"
+                  className="font-body-sm text-body-sm text-on-surface-variant cursor-pointer"
+                >
                   Enable Resource Booking (for meetings, vehicles, pool items)
                 </label>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-gray-300">Status</label>
-                <select
-                  value={status}
-                  onChange={(e) => setStatus(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl glass-input text-sm"
-                >
-                  <option value="ACTIVE" className="bg-[#080b11]">Active</option>
-                  <option value="INACTIVE" className="bg-[#080b11]">Inactive</option>
-                </select>
+              <div className="space-y-xs">
+                <label className="font-label-md text-label-md text-primary">
+                  Status
+                </label>
+                <div className="relative flex items-center border border-outline-variant rounded transition-all bg-surface-container-lowest h-10 px-sm">
+                  <select
+                    value={status}
+                    onChange={(e) => setStatus(e.target.value as "ACTIVE" | "INACTIVE")}
+                    className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 outline-none appearance-none"
+                  >
+                    <option value="ACTIVE">Active</option>
+                    <option value="INACTIVE">Inactive</option>
+                  </select>
+                  <span className="material-symbols-outlined text-outline text-[18px] pointer-events-none absolute right-2">arrow_drop_down</span>
+                </div>
               </div>
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl font-semibold text-white glass-button-primary text-sm transition-all mt-6"
+                className="w-full h-11 bg-primary hover:bg-[#1e293b] text-white font-label-md text-label-md rounded flex items-center justify-center transition-all shadow-sm mt-lg"
               >
-                {editingId ? 'Save Changes' : 'Create Category'}
+                {editingId ? "Save Changes" : "Create Category"}
               </button>
             </form>
           </div>
