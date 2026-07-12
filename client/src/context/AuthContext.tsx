@@ -9,6 +9,7 @@ interface AuthContextType {
   loading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (name: string, email: string, password: string, departmentId?: number) => Promise<void>;
+  forgotPassword: (email: string, employeeCode: string, newPassword: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -74,6 +75,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const forgotPassword = async (email: string, employeeCode: string, newPassword: string) => {
+    try {
+      await api.post("/forgot-password", { email, employeeCode, newPassword });
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const logout = () => {
     api.post("/logout").catch(() => {});
     localStorage.removeItem("nexasset_token");
@@ -92,7 +101,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, loading, login, signup, logout, refreshUser }}
+      value={{ user, token, loading, login, signup, forgotPassword, logout, refreshUser }}
     >
       {children}
     </AuthContext.Provider>

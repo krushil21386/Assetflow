@@ -217,3 +217,36 @@ export const getMe = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const forgotPassword = async (req, res) => {
+  const { email, employeeCode, newPassword } = req.body;
+
+  if (!email || !employeeCode || !newPassword) {
+    return res.status(400).json({ message: "Email, Employee Code and New Password are required" });
+  }
+
+  try {
+    const employee = await prisma.employee.findUnique({
+      where: { email },
+      include: { user: true }
+    });
+
+    if (!employee || employee.employeeCode !== employeeCode || !employee.userId) {
+      return res.status(400).json({ message: "Verification failed: Employee Code or Email does not match our records." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: employee.userId },
+      data: { password: hashedPassword }
+    });
+
+    await logActivity(employee.userId, "PASSWORD_RESET", `Password reset for user ${email}`, req);
+
+    return res.status(200).json({ message: "Password updated successfully. You can now log in." });
+  } catch (error) {
+    console.error("Forgot Password Error:", error);
+    return res.status(500).json({ message: "Internal Server Error during password reset" });
+  }
+};

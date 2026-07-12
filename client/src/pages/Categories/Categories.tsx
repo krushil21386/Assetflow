@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import api from "../../services/api";
-import type { AssetCategory } from "../../types";
+import api from "../../services/api";import { Plus, Spinner } from "phosphor-react";import type { AssetCategory } from "../../types";
 
 interface AssetCategoryWithCounts extends AssetCategory {
   _count?: {
@@ -116,9 +115,9 @@ export const Categories: React.FC = () => {
         </div>
         <button
           onClick={handleOpenCreate}
-          className="flex items-center gap-sm px-lg py-md rounded bg-primary text-white hover:bg-[#1e293b] font-label-md text-label-md transition-all shadow-sm active:scale-95"
+          className="group flex items-center gap-sm px-lg py-md rounded bg-primary text-white hover:bg-[#1e293b] font-label-md text-label-md transition-all shadow-sm active:scale-95"
         >
-          <span className="material-symbols-outlined text-[18px]">add</span>
+          <Plus size={18} weight="bold" className="group-hover:animate-icon-hover-rotate" />
           <span>Add Category</span>
         </button>
       </div>
@@ -126,7 +125,7 @@ export const Categories: React.FC = () => {
       {loading ? (
         <div className="flex items-center justify-center min-h-[300px]">
           <div className="flex flex-col items-center gap-3">
-            <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+            <Spinner size={48} className="text-primary animate-icon-spin" weight="bold" />
             <span className="font-label-md text-label-md text-on-surface-variant">Loading categories list...</span>
           </div>
         </div>

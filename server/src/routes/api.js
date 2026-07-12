@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup, login, logout, getMe } from "../controllers/authController.js";
+import { signup, login, logout, getMe, forgotPassword } from "../controllers/authController.js";
 import {
   getDepartments,
   createDepartment,
@@ -71,6 +71,7 @@ const router = Router();
 // ==========================================
 router.post("/login", login);
 router.post("/signup", signup);
+router.post("/forgot-password", forgotPassword);
 router.post("/logout", logout);
 
 // ==========================================

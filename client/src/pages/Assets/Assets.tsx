@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { Plus, Spinner } from "phosphor-react";
 import type { Asset, AssetCategory, Department } from "../../types";
 
 interface AssetWithRelations extends Omit<Asset, "images"> {
@@ -207,9 +208,9 @@ export const Assets: React.FC = () => {
         {isManagerOrAdmin && (
           <button
             onClick={handleOpenCreate}
-            className="flex items-center gap-sm px-lg py-md rounded bg-primary text-white hover:bg-[#1e293b] font-label-md text-label-md transition-all shadow-sm active:scale-95"
+            className="group flex items-center gap-sm px-lg py-md rounded bg-primary text-white hover:bg-[#1e293b] font-label-md text-label-md transition-all shadow-sm active:scale-95"
           >
-            <span className="material-symbols-outlined text-[18px]">add</span>
+            <Plus size={18} weight="bold" className="group-hover:animate-icon-hover-rotate" />
             <span>Register New Asset</span>
           </button>
         )}
@@ -352,7 +353,10 @@ export const Assets: React.FC = () => {
               {loading ? (
                 <tr>
                   <td colSpan={8} className="text-center py-xl text-on-surface-variant">
-                    Loading directory...
+                    <div className="flex items-center justify-center gap-2">
+                      <Spinner size={20} className="animate-icon-spin" weight="bold" />
+                      <span>Loading directory...</span>
+                    </div>
                   </td>
                 </tr>
               ) : filteredAssets.length === 0 ? (

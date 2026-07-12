@@ -55,7 +55,7 @@ export const DashboardLayout = ({ children }) => {
       {/* SideNavBar - Stitch Material Design 3 */}
       <aside className="h-screen w-64 fixed left-0 top-0 bg-surface-container-lowest flex flex-col py-md border-r border-outline-variant z-30 shadow-sm">
         <div className="px-md mb-xl flex items-center gap-2 mt-2">
-          <div className="w-8 h-8 bg-primary flex items-center justify-center rounded text-surface-container-lowest">
+          <div className="w-8 h-8 bg-primary flex items-center justify-center rounded text-surface-container-lowest shadow-md">
             <span className="material-symbols-outlined text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>hub</span>
           </div>
           <div>

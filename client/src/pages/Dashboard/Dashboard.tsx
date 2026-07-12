@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
+import { Spinner, Warning } from "phosphor-react";
 import {
   ResponsiveContainer,
   Cell,
@@ -54,7 +55,7 @@ export const Dashboard: React.FC = () => {
     return (
       <div className="flex items-center justify-center min-h-[500px]">
         <div className="flex flex-col items-center gap-3">
-          <span className="material-symbols-outlined animate-spin text-primary text-4xl">progress_activity</span>
+          <Spinner size={48} className="text-primary animate-icon-spin" weight="bold" />
           <span className="font-label-md text-label-md text-on-surface-variant">Loading workspace telemetry...</span>
         </div>
       </div>
@@ -64,7 +65,7 @@ export const Dashboard: React.FC = () => {
   if (!data) {
     return (
       <div className="glass-panel p-xl text-center">
-        <span className="material-symbols-outlined text-error text-4xl mb-sm">error</span>
+        <Warning size={48} className="text-error inline-block mb-sm" weight="bold" />
         <h3 className="font-headline-sm text-headline-sm text-primary">System Telemetry Error</h3>
         <p className="font-body-md text-body-md text-on-surface-variant mt-xs">Failed to establish connection with security and metrics controller.</p>
       </div>
