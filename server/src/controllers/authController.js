@@ -250,3 +250,70 @@ export const forgotPassword = async (req, res) => {
     return res.status(500).json({ message: "Internal Server Error during password reset" });
   }
 };
+
+export const updateMe = async (req, res) => {
+  const authUser = req.user;
+  if (!authUser) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const { name, phone, designation, password } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: authUser.id },
+      include: { employee: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const employee = user.employee;
+    if (!employee) {
+      return res.status(400).json({ message: "User is not linked to an employee profile" });
+    }
+
+    // Process uploaded profile photo if exists
+    let profilePhotoPath = employee.profilePhoto;
+    if (req.file) {
+      profilePhotoPath = `uploads/profile/${req.file.filename}`;
+    }
+
+    // Prepare update data
+    const employeeData = {};
+    if (name !== undefined) employeeData.name = name;
+    if (phone !== undefined) employeeData.phone = phone;
+    if (designation !== undefined) employeeData.designation = designation;
+    if (profilePhotoPath !== undefined) employeeData.profilePhoto = profilePhotoPath;
+
+    // Run update in transaction
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedEmployee = await tx.employee.update({
+        where: { id: employee.id },
+        data: employeeData,
+      });
+
+      if (password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        await tx.user.update({
+          where: { id: user.id },
+          data: { password: hashedPassword },
+        });
+      }
+
+      return updatedEmployee;
+    });
+
+    await logActivity(user.id, "UPDATE_PROFILE", `Updated profile settings`, req);
+
+    return res.status(200).json({
+      message: "Profile updated successfully",
+      employee: result,
+    });
+  } catch (error) {
+    console.error("Update Profile Error:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+

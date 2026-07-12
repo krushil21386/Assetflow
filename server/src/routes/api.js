@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { signup, login, logout, getMe, forgotPassword } from "../controllers/authController.js";
+import { signup, login, logout, getMe, updateMe, forgotPassword } from "../controllers/authController.js";
 import {
   getDepartments,
   createDepartment,
@@ -80,6 +80,7 @@ router.post("/logout", logout);
 router.use(authenticateJWT);
 
 router.get("/me", getMe);
+router.put("/me", upload.single("profilePhoto"), updateMe);
 router.get("/dashboard/summary", getDashboardSummary);
 router.get("/notifications", getNotifications);
 router.put("/notifications/:id/read", markNotificationRead);

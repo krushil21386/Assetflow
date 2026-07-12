@@ -87,8 +87,11 @@ export const DashboardLayout = ({ children }) => {
         </nav>
         
         <div className="mt-auto px-md space-y-1 pt-md border-t border-outline-variant">
-          <Link to="#" className="flex items-center px-md py-sm text-on-surface-variant hover:bg-surface-container-high font-label-md text-label-md transition-colors rounded">
-            <span className="material-symbols-outlined mr-md">settings</span> Settings
+          <Link to="/settings" className={`flex items-center px-md py-sm font-label-md text-label-md transition-all duration-200 ${ location.pathname === '/settings' ? 'bg-primary text-white border-l-4 border-secondary shadow-sm' : 'text-on-surface-variant hover:bg-surface-container-high border-l-4 border-transparent rounded' }`}>
+            <span className={`material-symbols-outlined mr-md ${ location.pathname === '/settings' ? 'text-secondary-fixed' : '' }`} style={location.pathname === '/settings' ? {fontVariationSettings: "'FILL' 1"} : {}}>
+              settings
+            </span>
+            Settings
           </Link>
           <button onClick={handleLogout} className="w-full flex items-center px-md py-sm text-error hover:bg-error/10 font-label-md text-label-md transition-colors rounded">
             <span className="material-symbols-outlined mr-md">logout</span> Logout
@@ -130,7 +133,7 @@ export const DashboardLayout = ({ children }) => {
           
           <div className="h-8 w-px bg-outline-variant mx-2"></div>
           
-          <div className="flex items-center gap-sm cursor-pointer hover:opacity-80 transition-opacity pl-2">
+          <Link to="/settings" className="flex items-center gap-sm cursor-pointer hover:opacity-80 transition-opacity pl-2">
             <div className="text-right">
               <p className="font-label-md text-label-md text-on-surface leading-tight font-bold">{user.employee?.name || "Admin User"}</p>
               <p className="font-label-sm text-label-sm text-on-surface-variant">{user.role}</p>
@@ -146,7 +149,7 @@ export const DashboardLayout = ({ children }) => {
                 {user.employee?.name ? user.employee.name.substring(0, 1).toUpperCase() : "A"}
               </div>
             )}
-          </div>
+          </Link>
         </div>
       </header>
 

@@ -22,6 +22,7 @@ import { Maintenance } from "./pages/Maintenance/Maintenance";
 import { Auditing } from "./pages/Audit/Auditing";
 import { Reports } from "./pages/Reports/Reports";
 import { Logs } from "./pages/Logs/Logs";
+import { Settings } from "./pages/Settings/Settings";
 
 // Route Guard
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -173,6 +174,17 @@ const App = () => {
               <ProtectedRoute allowedRoles={["Admin"]}>
                 <DashboardLayout>
                   <Logs />
+                </DashboardLayout>
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/settings"
+            element={
+              <ProtectedRoute>
+                <DashboardLayout>
+                  <Settings />
                 </DashboardLayout>
               </ProtectedRoute>
             }
