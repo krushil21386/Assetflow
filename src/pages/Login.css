@@ -1,0 +1,18 @@
+.ambient-glow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  filter: blur(120px);
+  z-index: 0;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.glow-emerald { background: #10b981; top: -10%; right: -10%; }
+.glow-blue { background: #3b82f6; bottom: -10%; left: -10%; }
+
+.input-focus-effect:focus-within {
+  border-color: #adc6ff;
+  box-shadow: 0 0 0 2px rgba(173, 198, 255, 0.4);
+}
