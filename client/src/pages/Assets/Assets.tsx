@@ -119,13 +119,13 @@ export const Assets: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!assetTag || !name || !categoryId || !purchaseDate || !purchaseCost) {
+    if (!name || !categoryId || !purchaseDate || !purchaseCost) {
       setError("Please fill in all required fields");
       return;
     }
 
     const formData = new FormData();
-    formData.append("assetTag", assetTag);
+    if (editingId) formData.append("assetTag", assetTag); // only send on edit
     formData.append("name", name);
     formData.append("categoryId", categoryId);
     formData.append("brand", brand);
@@ -345,7 +345,7 @@ export const Assets: React.FC = () => {
                 <th className="py-3 px-md border-r border-white/10">Status</th>
                 <th className="py-3 px-md border-r border-white/10">Location</th>
                 <th className="py-3 px-md border-r border-white/10">Condition</th>
-                <th className="py-3 px-md border-r border-white/10 text-right">Value (USD)</th>
+                <th className="py-3 px-md border-r border-white/10 text-right">Value (INR)</th>
                 {isManagerOrAdmin && <th className="py-3 px-md text-right">Actions</th>}
               </tr>
             </thead>
@@ -458,18 +458,26 @@ export const Assets: React.FC = () => {
             <form onSubmit={handleSubmit} className="space-y-md">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-md">
                 <div className="space-y-xs">
-                  <label className="font-label-md text-label-md text-primary">Asset Tag (ID) *</label>
-                  <div className="relative flex items-center border border-outline-variant rounded transition-all bg-surface-container-lowest h-10 px-sm">
-                    <input
-                      type="text"
-                      value={assetTag}
-                      onChange={(e) => setAssetTag(e.target.value)}
-                      placeholder="e.g. AST-001"
-                      className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 placeholder:text-outline/50 outline-none"
-                      required
-                    />
-                  </div>
+                  <label className="font-label-md text-label-md text-primary">Asset Tag (ID)</label>
+                  {editingId ? (
+                    <div className="relative flex items-center border border-outline-variant rounded bg-surface-container-low h-10 px-sm">
+                      <span className="material-symbols-outlined text-outline text-[16px] mr-xs">tag</span>
+                      <input
+                        type="text"
+                        value={assetTag}
+                        onChange={(e) => setAssetTag(e.target.value)}
+                        className="w-full bg-transparent border-none focus:ring-0 font-body-md text-body-md p-0 outline-none font-mono font-bold text-primary"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-sm h-10 px-sm bg-emerald-50 border border-emerald-200 rounded">
+                      <span className="material-symbols-outlined text-emerald-600 text-[18px]">auto_awesome</span>
+                      <span className="font-mono font-bold text-emerald-700 text-sm">Auto-generated on save</span>
+                      <span className="text-[10px] text-emerald-600 italic">(e.g. AST-004)</span>
+                    </div>
+                  )}
                 </div>
+
 
                 <div className="space-y-xs">
                   <label className="font-label-md text-label-md text-primary">Asset Name *</label>

@@ -161,7 +161,7 @@ export const Maintenance: React.FC = () => {
                   <th className="py-3 px-md border-r border-white/10">Priority</th>
                   <th className="py-3 px-md border-r border-white/10">Reported By</th>
                   <th className="py-3 px-md border-r border-white/10">Technician Assigned</th>
-                  <th className="py-3 px-md border-r border-white/10">Cost (USD)</th>
+                  <th className="py-3 px-md border-r border-white/10">Cost (INR)</th>
                   <th className="py-3 px-md border-r border-white/10">Status</th>
                   <th className="py-3 px-md text-right">Actions</th>
                 </tr>
