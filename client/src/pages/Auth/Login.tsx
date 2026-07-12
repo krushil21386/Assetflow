@@ -1,20 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../../context/AuthContext';
 
-export const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+export const Login: React.FC = () => {
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [error, setError] = useState<string>('');
+  const [mousePosition, setMousePosition] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   
   const navigate = useNavigate();
   const { login } = useAuth();
 
   useEffect(() => {
-    const handleMouseMove = (e) => {
+    const handleMouseMove = (e: MouseEvent) => {
       const moveX = (e.clientX - window.innerWidth / 2) / 50;
       const moveY = (e.clientY - window.innerHeight / 2) / 50;
       setMousePosition({ x: moveX, y: moveY });
@@ -24,7 +24,7 @@ export const Login = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError('');
@@ -32,7 +32,7 @@ export const Login = () => {
     try {
       await login(email, password);
       navigate('/');
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data?.message || 'Authentication failed. Please check your credentials.');
     } finally {
       setIsSubmitting(false);
@@ -60,7 +60,7 @@ export const Login = () => {
             </div>
             <h1 className="font-headline-md text-headline-md text-primary tracking-tight">AssetFlow</h1>
           </div>
-          <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest">Enterprise Resource Management</p>
+          <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest text-[10px]">Enterprise Resource Management</p>
         </div>
         
         {/* Login Card */}
@@ -113,11 +113,11 @@ export const Login = () => {
                   type={showPassword ? "text" : "password"} 
                 />
                 <button 
-                  className="text-outline hover:text-primary transition-colors" 
+                  className="text-outline hover:text-primary transition-colors bg-transparent border-none outline-none cursor-pointer" 
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                 >
-                  <span className="material-symbols-outlined text-[18px]">
+                  <span className="material-symbols-outlined text-[18px] block">
                     {showPassword ? "visibility_off" : "visibility"}
                   </span>
                 </button>
@@ -132,7 +132,7 @@ export const Login = () => {
             
             {/* Submit Button */}
             <button 
-              className="w-full h-11 bg-[#10b981] hover:bg-[#059669] text-white font-label-md text-label-md rounded flex items-center justify-center gap-sm transition-all active:scale-[0.98] shadow-sm mt-lg disabled:opacity-80 disabled:cursor-not-allowed" 
+              className="w-full h-11 bg-primary hover:bg-[#1e293b] text-white font-label-md text-label-md rounded flex items-center justify-center gap-sm transition-all active:scale-[0.98] shadow-sm mt-lg disabled:opacity-80 disabled:cursor-not-allowed" 
               type="submit"
               disabled={isSubmitting}
             >

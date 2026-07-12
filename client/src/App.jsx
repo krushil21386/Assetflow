@@ -9,19 +9,19 @@ import { AuthProvider, useAuth } from "./context/AuthContext";
 import { DashboardLayout } from "./layouts/DashboardLayout";
 
 // Pages
-import { Login } from "./pages/Login";
-import { Signup } from "./pages/Signup";
-import Dashboard from "./pages/Dashboard";
-import { Departments } from "./pages/Departments";
-import { Categories } from "./pages/Categories";
-import { Employees } from "./pages/Employees";
-import { Assets } from "./pages/Assets";
-import { Allocations } from "./pages/Allocations";
-import { Bookings } from "./pages/Bookings";
-import { Maintenance } from "./pages/Maintenance";
-import { Auditing } from "./pages/Auditing";
-import { Reports } from "./pages/Reports";
-import { Logs } from "./pages/Logs";
+import { Login } from "./pages/Auth/Login";
+import { Signup } from "./pages/Auth/Signup";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import { Departments } from "./pages/Departments/Departments";
+import { Categories } from "./pages/Categories/Categories";
+import { Employees } from "./pages/Employees/Employees";
+import { Assets } from "./pages/Assets/Assets";
+import { Allocations } from "./pages/Allocation/Allocations";
+import { Bookings } from "./pages/Booking/Bookings";
+import { Maintenance } from "./pages/Maintenance/Maintenance";
+import { Auditing } from "./pages/Audit/Auditing";
+import { Reports } from "./pages/Reports/Reports";
+import { Logs } from "./pages/Logs/Logs";
 
 // Route Guard
 const ProtectedRoute = ({ children, allowedRoles }) => {

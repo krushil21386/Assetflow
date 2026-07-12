@@ -1,5 +1,5 @@
 import axios from "axios";
-
+import type { InternalAxiosRequestConfig } from "axios";
 const API_BASE_URL = "http://localhost:5000/api";
 
 const api = axios.create({
@@ -11,9 +11,9 @@ const api = axios.create({
 
 // Interceptor to inject bearer token
 api.interceptors.request.use(
-  (config) => {
+  (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem("nexasset_token");
-    if (token) {
+    if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;

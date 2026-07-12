@@ -1,12 +1,24 @@
-import React, { createContext, useState, useEffect, useContext } from "react";
+import { createContext, useState, useEffect, useContext } from "react";
+import type { ReactNode } from "react";
 import api from "../services/api";
+import type { User } from "../types";
 
-const AuthContext = createContext(null);
+interface AuthContextType {
+  user: User | null;
+  token: string | null;
+  loading: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string, departmentId?: number) => Promise<void>;
+  logout: () => void;
+  refreshUser: () => Promise<void>;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(null);
-  const [loading, setLoading] = useState(true);
+const AuthContext = createContext<AuthContextType | null>(null);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -27,7 +39,7 @@ export const AuthProvider = ({ children }) => {
     initializeAuth();
   }, []);
 
-  const login = async (email, password) => {
+  const login = async (email: string, password: string) => {
     setLoading(true);
     try {
       const res = await api.post("/login", { email, password });
@@ -42,7 +54,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const signup = async (name, email, password, departmentId) => {
+  const signup = async (name: string, email: string, password: string, departmentId?: number) => {
     setLoading(true);
     try {
       const res = await api.post("/signup", {
